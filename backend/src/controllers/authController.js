@@ -88,14 +88,65 @@ export const login = async (req, res) => {
       { expiresIn: "15m" },
     );
 
-    return res.json({ token });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    // return res.json({ token });
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const triggerSystemLock = async (user, res, actionType) => {
+export const checkAuth = async (req, res) => {
+  try {
+    const token = req.cookies?.["token"];
+
+    if (!token) return res.status(401).json({ authenticated: false });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select(
+      "-passwordHash -panicPasswordHash",
+    );
+
+    if (!user) {
+      res.clearCookie("token");
+      return res.status(401).json({ authenticated: false });
+    }
+
+    if (user.isLocked) {
+      res.clearCookie("token");
+      return res
+        .status(403)
+        .json({ authenticated: false, message: "Account locked" });
+    }
+
+    return res.json({
+      authenticated: true,
+      role: user.role,
+      username: user.username,
+      userId: user._id,
+    });
+  } catch {
+    // Expired or tampered JWT — clear the stale cookie
+    res.clearCookie("token");
+    return res.status(401).json({ authenticated: false });
+  }
+};
+
+export const triggerSystemLock = async (user, res, actionType) => {
   const { key, hashedKey } = await generateUnlockKey();
 
   await GlobalLock.updateOne(
@@ -117,4 +168,14 @@ const triggerSystemLock = async (user, res, actionType) => {
     message: "Emergency lock triggered",
     unlockKey: key,
   });
+};
+
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+  });
+
+  return res.status(200).json({ message: "Logged out successfully" });
 };

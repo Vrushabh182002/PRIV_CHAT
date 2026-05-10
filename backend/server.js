@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import http from "http";
+import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { connectToDB } from "./src/config/db.js";
 import { initSocket } from "./src/config/socket.js";
@@ -17,11 +18,12 @@ const port = process.env.PORT || 8080;
 
 // ── Middleware
 app.use(helmet());
+app.use(cookieParser());
 
 // ── CORS
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: process.env.VITE_FRONTEND_URL || "http://localhost:5173",
     credentials: true,
   }),
 );

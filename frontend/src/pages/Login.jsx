@@ -231,7 +231,7 @@ const Login = () => {
           Don’t have an account?{" "}
           <span
             onClick={navigatePage}
-            className="text-[#c8a97e] hover:underline"
+            className="text-[#c8a97e] cursor-pointer hover:underline"
           >
             Create one
           </span>

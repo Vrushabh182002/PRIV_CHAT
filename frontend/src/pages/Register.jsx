@@ -273,7 +273,10 @@ const Register = () => {
         {/* FOOTER */}
         <div className="text-center text-xs sm:text-sm text-gray-500 mt-5 sm:mt-6">
           Already have an account?{" "}
-          <span onClick={navigatePage} className="text-[#c8a97e] hover:underline">
+          <span
+            onClick={navigatePage}
+            className="text-[#c8a97e] cursor-pointer hover:underline"
+          >
             Sign in
           </span>
         </div>

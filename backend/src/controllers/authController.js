@@ -8,6 +8,28 @@ import { generateUnlockKey } from "../utils/generateUnlockKey.js";
 export const register = async (req, res) => {
   const { username, email, password, panicPassword } = req.body;
 
+  // Check username
+  const existingUsername = await User.findUnique({
+    where: { username },
+  });
+
+  if (existingUsername) {
+    return res.status(409).json({
+      message: "Username already exists",
+    });
+  }
+
+  // Check email
+  const existingEmail = await User.findUnique({
+    where: { email },
+  });
+
+  if (existingEmail) {
+    return res.status(409).json({
+      message: "Email already exists",
+    });
+  }
+  
   if (!panicPassword) {
     return res.status(400).json({ message: "Panic password required" });
   }

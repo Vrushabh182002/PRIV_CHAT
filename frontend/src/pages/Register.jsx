@@ -15,6 +15,7 @@ import axios from "axios";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordTwo, setShowPasswordTwo] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const { register, handleSubmit } = useForm();
@@ -40,14 +41,16 @@ const Register = () => {
         theme: "dark",
       });
 
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
 
       console.log("Register Successfull:", res.data);
     } catch (error) {
       console.log("Registration Unsuccessfull : ", error);
       setLoading(false);
 
-      let errorMessage = "Something went wrong";
+      let errorMessage = error ? error.response?.data?.message : "Something went wrong";
 
       toast.error(errorMessage, {
         position: "bottom-center",
@@ -225,7 +228,7 @@ const Register = () => {
             <div className="relative">
               <CiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
               <input
-                type={!showPassword ? "password" : "text"}
+                type={!showPasswordTwo ? "password" : "text"}
                 placeholder="Panic password"
                 className="w-full bg-[#0c0d0f] border border-[#2a2f3a] 
                 rounded-lg px-10 py-2.5 sm:py-3 pr-10 
@@ -238,11 +241,11 @@ const Register = () => {
 
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPasswordTwo(!showPasswordTwo)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 
                 text-gray-500 hover:text-white text-sm"
               >
-                {!showPassword ? <FaEye /> : <FaEyeSlash />}
+                {!showPasswordTwo ? <FaEye /> : <FaEyeSlash />}
               </button>
             </div>
           </div>

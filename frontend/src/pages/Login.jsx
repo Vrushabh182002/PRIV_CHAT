@@ -36,11 +36,13 @@ const Login = () => {
         theme: "dark",
       });
 
-      if (res.data.user.role === "ADMIN") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+      setTimeout(() => {
+        if (res.data.user.role === "ADMIN") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      }, 2000);
 
       console.log("Login Success:", res.data);
     } catch (error) {
@@ -227,7 +229,10 @@ const Login = () => {
         {/* FOOTER */}
         <div className="text-center text-xs sm:text-sm text-gray-500 mt-5 sm:mt-6">
           Don’t have an account?{" "}
-          <span onClick={navigatePage} className="text-[#c8a97e] hover:underline">
+          <span
+            onClick={navigatePage}
+            className="text-[#c8a97e] hover:underline"
+          >
             Create one
           </span>
         </div>

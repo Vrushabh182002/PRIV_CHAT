@@ -20,6 +20,10 @@ const Register = () => {
   const { register, handleSubmit } = useForm();
   const navigate = useNavigate();
 
+  const navigatePage = () => {
+    navigate("/login");
+  };
+
   const onSubmit = async (data) => {
     setLoading(true);
 
@@ -266,9 +270,9 @@ const Register = () => {
         {/* FOOTER */}
         <div className="text-center text-xs sm:text-sm text-gray-500 mt-5 sm:mt-6">
           Already have an account?{" "}
-          <a href="/login" className="text-[#c8a97e] hover:underline">
+          <span onClick={navigatePage} className="text-[#c8a97e] hover:underline">
             Sign in
-          </a>
+          </span>
         </div>
       </div>
     </div>

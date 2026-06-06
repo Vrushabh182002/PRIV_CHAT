@@ -18,6 +18,10 @@ const Login = () => {
   const { register, handleSubmit } = useForm();
   const navigate = useNavigate();
 
+  const navigatePage = () => {
+    navigate("/register");
+  };
+
   const onSubmit = async (data) => {
     setLoading(true);
     const URL = import.meta.env.VITE_BACKEND_URL;
@@ -52,7 +56,7 @@ const Login = () => {
 
         return;
       }
-      
+
       // Backend responded with error
       if (error.response) {
         errorMessage = error.response.data?.message || "Invalid credentials";
@@ -223,9 +227,9 @@ const Login = () => {
         {/* FOOTER */}
         <div className="text-center text-xs sm:text-sm text-gray-500 mt-5 sm:mt-6">
           Don’t have an account?{" "}
-          <a href="#" className="text-[#c8a97e] hover:underline">
+          <span onClick={navigatePage} className="text-[#c8a97e] hover:underline">
             Create one
-          </a>
+          </span>
         </div>
       </div>
     </div>

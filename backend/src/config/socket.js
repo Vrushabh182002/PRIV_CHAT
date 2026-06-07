@@ -1,6 +1,5 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import GlobalLock from "../models/GlobalLock.js";
 import Message from "../models/Message.js";
 
 export const initSocket = (server) => {
@@ -12,7 +11,6 @@ export const initSocket = (server) => {
   });
 
   // ── Auth Middleware
-  // Runs before every connection — verifies the JWT from handshake
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error("Unauthorized: no token"));
@@ -29,47 +27,52 @@ export const initSocket = (server) => {
   // ── Connection Handler
   io.on("connection", async (socket) => {
     try {
-      const lock = await GlobalLock.findOne();
+      // 🔥 FETCH USER FROM DB (IMPORTANT)
+      const user = await User.findById(socket.user.id);
 
-      if (lock?.isSystemLocked && socket.user.role !== "ADMIN") {
+      if (!user) {
         return socket.disconnect(true);
       }
 
-      // User joins their own private room (for direct DMs / notifications)
-      socket.join(socket.user.id);
-      console.log(`User ${socket.user.id} connected`);
+      // ❌ BLOCK ONLY THIS USER IF LOCKED
+      if (user.isLocked) {
+        console.log(`Blocked locked user: ${user._id}`);
+        return socket.disconnect(true);
+      }
+
+      // Join private room
+      socket.join(user._id.toString());
+      console.log(`User ${user._id} connected`);
 
       // ── joinChat
       socket.on("joinChat", (chatId) => {
         socket.join(chatId);
       });
 
+      // ── sendMessage
       socket.on("sendMessage", async (data) => {
         try {
           const { chatId, content, messageType = "text" } = data;
 
-          // Persist to MongoDB BEFORE broadcasting
-          // This guarantees message history, offline delivery, and consistency.
-          // The saved doc (with _id, createdAt) is what recipients receive —
-          // not the raw unvalidated client payload.
           const savedMessage = await Message.create({
             chatId,
-            senderId: socket.user.id,
+            senderId: user._id,
             content,
             messageType,
           });
 
-          // Broadcast the persisted document to all room members
           io.to(chatId).emit("receiveMessage", savedMessage);
         } catch (error) {
           console.error("sendMessage error:", error);
-          socket.emit("messageError", { message: "Failed to send message" });
+          socket.emit("messageError", {
+            message: "Failed to send message",
+          });
         }
       });
 
       // ── disconnect
       socket.on("disconnect", () => {
-        console.log(`User ${socket.user.id} disconnected`);
+        console.log(`User ${user._id} disconnected`);
       });
     } catch (error) {
       console.error("Socket connection error:", error);

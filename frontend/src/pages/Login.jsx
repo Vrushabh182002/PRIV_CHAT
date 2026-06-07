@@ -54,7 +54,15 @@ const Login = () => {
       if (error.response?.status === 403 && error.response?.data?.unlockKey) {
         sessionStorage.setItem("panicUnlockKey", error.response.data.unlockKey);
 
-        navigate("/system-locked");
+        toast.error(error.response?.data?.message || "Emergency lock triggered", {
+          position: "bottom-center",
+          autoClose: 3000,
+          theme: "dark",
+        });
+
+        setTimeout(() => {
+          navigate("/system-locked");
+        }, 3000);
 
         return;
       }

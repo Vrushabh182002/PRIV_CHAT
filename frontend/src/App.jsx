@@ -5,12 +5,14 @@ import AdminRoute from "./security/AdminRoute";
 import PublicRoute from "./security/PublicRoute";
 import ProtectedRoute from "./security/ProtectedRoute";
 import Loader from "./components/Loader";
+import SP from "./components/ThinkingNineLoader";
 
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Chats = lazy(() => import("./pages/Chats"));
 const AccountLock = lazy(() => import("./pages/AccountLock"));
 const AdminDashboard = lazy(() => import("./admin/AdminDashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const App = () => {
   return (
@@ -51,10 +53,11 @@ const App = () => {
               path="/admin"
               element={
                 // <AdminRoute>
-                  <AdminDashboard />
+                <AdminDashboard />
                 // {/* </AdminRoute> */}
               }
             />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </main>

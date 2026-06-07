@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import GlobalLock from "../models/GlobalLock.js";
 import AuditLog from "../models/AuditLog.js";
 import { generateUnlockKey } from "../utils/generateUnlockKey.js";
 
@@ -63,11 +62,6 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const globalLock = await GlobalLock.findOne();
-    if (globalLock?.isSystemLocked) {
-      return res.status(403).json({ message: "System locked" });
-    }
-
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
@@ -83,7 +77,7 @@ export const login = async (req, res) => {
     ]);
 
     if (panicMatch) {
-      return await triggerSystemLock(user, res, "SYSTEM_LOCKED_BY_PANIC");
+      return await triggerUserLock(user, res);
     }
 
     if (!normalMatch) {
@@ -164,21 +158,40 @@ export const checkAuth = async (req, res) => {
   }
 };
 
-export const triggerSystemLock = async (user, res, actionType) => {
+// export const triggerSystemLock = async (user, res, actionType) => {
+//   const { key, hashedKey } = await generateUnlockKey();
+
+//   await GlobalLock.updateOne(
+//     {},
+//     {
+//       isSystemLocked: true,
+//       triggeredBy: user._id,
+//       unlockKeyHash: hashedKey,
+//     },
+//     { upsert: true },
+//   );
+
+//   await AuditLog.create({
+//     action: actionType,
+//     performedBy: user._id,
+//   });
+
+//   return res.status(403).json({
+//     message: "Emergency lock triggered",
+//     unlockKey: key,
+//   });
+// };
+
+export const triggerUserLock = async (user, res) => {
   const { key, hashedKey } = await generateUnlockKey();
 
-  await GlobalLock.updateOne(
-    {},
-    {
-      isSystemLocked: true,
-      triggeredBy: user._id,
-      unlockKeyHash: hashedKey,
-    },
-    { upsert: true },
-  );
+  user.isLocked = true;
+  user.unlockKeyHash = hashedKey;
+
+  await user.save();
 
   await AuditLog.create({
-    action: actionType,
+    action: "USER_LOCKED_BY_PANIC",
     performedBy: user._id,
   });
 

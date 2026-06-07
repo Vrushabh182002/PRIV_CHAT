@@ -15,7 +15,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, reset } = useForm();
   const navigate = useNavigate();
 
   const navigatePage = () => {
@@ -49,6 +49,11 @@ const Login = () => {
       console.log("Login Unsuccessfull : ", error);
       setLoading(false);
 
+      reset({
+        email: data.email,
+        password: "",
+      });
+      
       let errorMessage = "Something went wrong";
 
       if (error.response?.status === 403 && error.response?.data?.unlockKey) {

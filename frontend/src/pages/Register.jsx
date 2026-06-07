@@ -86,7 +86,7 @@ const Register = () => {
         className="absolute 
         w-75 h-75 sm:w-125 sm:h-125 lg:w-162.5 lg:h-162.5
         bg-[radial-gradient(circle,#c8a97e10_0%,transparent_70%)]
-        blur-3xl -top-20 -left-20 sm:-top-30 sm:-left-30"
+        blur-3xl"
       />
       {/* // Form Card */}
       <div
